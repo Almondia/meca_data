@@ -34,16 +34,6 @@ jobs:
     name: cd
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: copy file via ssh password
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.PROD_HOST }}
-          username: ubuntu
-          key: ${{ secrets.PROD_SSH_KEY }}
-          port: ${{ secrets.PROD_PORT }}
-          source: "docker-compose.yml"
-          target: ${{ secrets.PROD_TARGET }}
       - name: executing remote ssh commands using password
         uses: appleboy/ssh-action@master
         with:
