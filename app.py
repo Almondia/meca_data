@@ -16,7 +16,7 @@ app = Flask(__name__)
 CORS(app)
 
 # To run this app in a local environment, you need to add the following setting ['JAVA_HOME'].
-# os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-17.0.4'
+os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-17.0.4'
 okt = Okt()
 
 
@@ -38,7 +38,7 @@ def post_nouns():
         for key, value in keyword_counts.items():
             result[key] = value
         get_db().hello.update_many({'user_id': user_id}, {'$inc': result}, upsert=True)
-        return json.dumps(result, ensure_ascii=False)
+        return jsonify({'keyword': result})
     except:
         return jsonify({'message': 'bad request'}), 400
 
@@ -47,7 +47,7 @@ def post_nouns():
 def get_nouns(user_id):
     try:
         data = get_db().hello.find_one({'user_id': user_id}, {'_id': False})
-        return json.dumps({'keywords': data, 'user': user_id}, ensure_ascii=False)
+        return jsonify({'keywords': data, 'user': user_id})
     except:
         return jsonify({'message': 'bad request'}), 400
 
