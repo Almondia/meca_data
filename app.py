@@ -16,7 +16,7 @@ app = Flask(__name__)
 CORS(app)
 
 # To run this app in a local environment, you need to add the following setting ['JAVA_HOME'].
-os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-17.0.4'
+# os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-17.0.4'
 okt = Okt()
 
 
