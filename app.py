@@ -33,11 +33,13 @@ def post_nouns():
         user_id = data['userId']
         eng_list = extract_english_keyword(sentence)
         kor_list = extract_korean_keyword(sentence)
-        keyword_counts = Counter(eng_list + kor_list)
+        combined_list = eng_list + kor_list
+        filtered_list = [word for word in combined_list if len(word) > 1]
+        keyword_counts = Counter(filtered_list)
         result = {}
         for key, value in keyword_counts.items():
             result[key] = value
-        get_db().hello.update_many({'user_id': user_id}, {'$inc': result}, upsert=True)
+        get_db().keywords.update_many({'user_id': user_id}, {'$inc': result}, upsert=True)
         return jsonify({'keyword': result})
     except:
         return jsonify({'message': 'bad request'}), 400
@@ -46,7 +48,7 @@ def post_nouns():
 @app.route('/api/nouns/<string:user_id>', methods=['GET'])
 def get_nouns(user_id):
     try:
-        data = get_db().hello.find_one({'user_id': user_id}, {'_id': False})
+        data = get_db().keywords.find_one({'user_id': user_id}, {'_id': False})
         return jsonify({'keywords': data, 'user': user_id})
     except:
         return jsonify({'message': 'bad request'}), 400
