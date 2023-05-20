@@ -28,7 +28,7 @@ def home():
     return 'hello meca data server'
 
 
-@app.route('/api/nouns', methods=['POST'])
+@app.route('/api/keywords', methods=['POST'])
 def post_nouns():
     try:
         data = request.get_json()
@@ -48,7 +48,7 @@ def post_nouns():
         return jsonify({'message': 'bad request'}), 400
 
 
-@app.route('/api/nouns/<string:user_id>', methods=['GET'])
+@app.route('/api/keywords/<string:user_id>', methods=['GET'])
 def get_nouns(user_id):
     try:
         data = get_db().keywords.find_one({'user_id': user_id}, {'_id': False})
