@@ -3,6 +3,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from konlpy.tag import Okt
 from nltk import word_tokenize, pos_tag
+from fuzzywuzzy import fuzz
+from googletrans import Translator
 import nltk
 import re
 import json
@@ -18,6 +20,7 @@ CORS(app)
 # To run this app in a local environment, you need to add the following setting ['JAVA_HOME'].
 # os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-17.0.4'
 okt = Okt()
+translator = Translator()
 
 
 @app.route('/')
@@ -54,6 +57,23 @@ def get_nouns(user_id):
         return jsonify({'message': 'bad request'}), 400
 
 
+@app.route('/api/scores', methods=['POST'])
+def post_scores():
+    try:
+        data = request.get_json()
+        answer = (data['answer']).upper()
+        input_value = (data['input']).upper()
+        user_id = data['userId']
+        score = max(get_string_distance(input_value, answer),
+                    get_string_distance(get_translated_text(input_value), get_translated_text(answer)))
+        weighted_score = get_weighted_score(score)
+        get_db().scores.update_one({'user_id': user_id}, {'$inc': {'count': 1, 'total_score': weighted_score}},
+                                   upsert=True)
+        return jsonify({'score': weighted_score})
+    except:
+        return jsonify({'message': 'bad request'}), 400
+
+
 def extract_english_keyword(keyword):
     english_text = re.sub('[^a-zA-Z]', ' ', keyword)
     english_tagged = pos_tag(word_tokenize(english_text))
@@ -64,6 +84,23 @@ def extract_english_keyword(keyword):
 def extract_korean_keyword(keyword):
     korean_text = re.sub('[^가-힣]', ' ', keyword)
     return okt.nouns(okt.normalize(korean_text))
+
+
+def get_string_distance(input_string, answer):
+    if len(input_string) == 1 and len(answer) == 1:
+        return fuzz.ratio(input_string, answer)
+    return fuzz.token_sort_ratio(input_string, answer)
+
+
+def get_translated_text(text):
+    result = translator.translate(text, dest='en')
+    return result.text.upper()
+
+
+def get_weighted_score(score):
+    if score == 100:
+        return score
+    return round(score ** 0.965)
 
 
 if __name__ == '__main__':
