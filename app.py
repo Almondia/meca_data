@@ -57,6 +57,15 @@ def get_nouns(user_id):
         return jsonify({'message': 'bad request'}), 400
 
 
+@app.route('/api/scores/<string:user_id>', methods=['GET'])
+def get_scores(user_id):
+    try:
+        data = get_db().scores.find_one({'user_id': user_id}, {'_id': False})
+        return jsonify({'totalScore': data['total_score'], 'count' : data['count'], 'user': user_id})
+    except:
+        return jsonify({'message': 'bad request'}), 400
+
+
 @app.route('/api/scores', methods=['POST'])
 def post_scores():
     try:
