@@ -61,7 +61,12 @@ def get_nouns(user_id):
 def get_scores(user_id):
     try:
         data = get_db().scores.find_one({'user_id': user_id}, {'_id': False})
-        return jsonify({'totalScore': data['total_score'], 'count' : data['count'], 'user': user_id})
+        total_score = 0
+        count = 0
+        if data is not None:
+            total_score = data['total_score']
+            count = data['count']
+        return jsonify({'totalScore': total_score, 'count': count, 'user': user_id})
     except:
         return jsonify({'message': 'bad request'}), 400
 
