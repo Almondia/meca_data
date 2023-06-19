@@ -6,3 +6,4 @@ nltk~=3.8.1
 load_dotenv~=0.1.0
 fuzzywuzzy~=0.18.0
 googletrans~=3.1.0a0
+gunicorn
