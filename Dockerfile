@@ -14,4 +14,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 5000
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "-w", "2", "--keep-alive", "10", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
