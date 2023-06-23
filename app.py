@@ -6,7 +6,7 @@ from nltk import word_tokenize, pos_tag
 from googletrans import Translator
 import nltk
 import re
-import json
+
 import os
 from db_connect import get_db
 
@@ -23,6 +23,7 @@ CORS(app)
 okt = Okt()
 translator = Translator()
 
+
 @app.route('/')
 def home():
     return 'hello meca data server'
@@ -34,7 +35,7 @@ def post_nouns():
         data = request.get_json()
         sentence = data['sentence']
         user_id = data['userId']
-        eng_dict = extract_english_keyword(sentence)
+        eng_dict = extract_english_keyword(re.sub('[^a-zA-Z]', ' ', sentence))
         eng_list = [d['morph'] for d in eng_dict]
         kor_list = extract_korean_keyword(sentence)
         combined_list = eng_list + kor_list
@@ -71,12 +72,11 @@ def put_morpheme():
         return jsonify({'message': 'bad request'}), 400
 
 
-def extract_english_keyword(keyword):
-    english_text = re.sub('[^a-zA-Z]', ' ', keyword)
-    english_tagged = pos_tag(word_tokenize(english_text))
+def extract_english_keyword(sentence):
+    english_tagged = pos_tag(word_tokenize(sentence))
     english_list = []
     for word, pos in english_tagged:
-        if word.lower() not in stopwords:
+        if pos != 'POS' and len(word) > 1 and word.lower() not in stopwords:
             extracted = {'morph': word, 'pos': pos}
             english_list.append(extracted)
     return english_list
@@ -84,7 +84,7 @@ def extract_english_keyword(keyword):
 
 def extract_korean_keyword(keyword):
     korean_text = re.sub('[^가-힣]', ' ', keyword)
-    return okt.nouns(okt.normalize(korean_text))
+    return okt.nouns(korean_text)
 
 
 def get_translated_text(text):
