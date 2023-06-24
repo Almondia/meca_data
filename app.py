@@ -3,6 +3,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from konlpy.tag import Okt
 from nltk import word_tokenize, pos_tag
+from nltk.stem import WordNetLemmatizer
 from googletrans import Translator
 import nltk
 import re
@@ -11,6 +12,7 @@ import os
 from db_connect import get_db
 
 nltk.download('punkt')
+nltk.download('wordnet')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('stopwords')
 
@@ -22,6 +24,7 @@ CORS(app)
 # os.environ['JAVA_HOME'] = 'C:/Program Files/Java/jdk-17.0.4'
 okt = Okt()
 translator = Translator()
+legitimatizer = WordNetLemmatizer()
 
 
 @app.route('/')
@@ -76,8 +79,13 @@ def extract_english_keyword(sentence):
     english_tagged = pos_tag(word_tokenize(sentence))
     english_list = []
     for word, pos in english_tagged:
-        if pos != 'POS' and len(word) > 1 and word.lower() not in stopwords:
-            extracted = {'morph': word, 'pos': pos}
+        print(word)
+        if pos != 'POS' and not re.match(r'^[\W_]+$', word) and word.lower() not in stopwords:
+            trim_word = re.sub(r'^\W+|\W+$', '', word)
+            if len(trim_word) <= 1:
+                continue
+            lemma_word = legitimatizer.lemmatize(trim_word.lower(), pos='v').upper()
+            extracted = {'morph': lemma_word, 'pos': pos}
             english_list.append(extracted)
     return english_list
 
